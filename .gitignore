@@ -1,3 +1,18 @@
+# GitHub Actions Runner files
+.runner
+.path
+.credentials
+_work/
+_diag/
+bin/
+externals/
+run.sh
+config.sh
+env.sh
+svc.sh
+safe_sleep.sh
+actions-runner-*.tar.gz
+
 #Node.json/React
 node_modules/
 npm-debug.log
