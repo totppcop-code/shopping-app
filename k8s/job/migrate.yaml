@@ -1,0 +1,20 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: migrate
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 200
+  template:
+    spec:
+      containers:
+        - name: migrate
+          image: shopping-app-backend:latest
+          imagePullPolicy: IfNotPresent
+          command: ["python", "manage.py", "migrate"]
+          envFrom:
+            - secretRef:
+                name: backend-secret
+      restartPolicy: Never
+
+      

@@ -1,0 +1,38 @@
+name: CI/CD Pipeline
+on:
+  push:
+      branches: ["master"]
+jobs:
+    build-and-deploy:
+      runs-on: self-hosted
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+        
+        - name: Kind create cluster
+          run: |
+            kind create cluster --name shopping-cluster --config kind-config.yaml
+
+        - name: Build docker-image
+          run: |
+            docker build -t shopping-app-backend:latest ./backend
+            docker build -t shopping-app-frontend:latest ./frontend
+        
+        - name: Load docker-image
+          run: |
+            kind load docker-image shopping-app-backend:latest --name shopping-cluster
+            kind load docker-image shopping-app-frontend:latest --name shopping-cluster
+
+        - name: Apply k8s
+          run: |
+            kubectl apply -f k8s/
+
+        - name: Wait for postgres
+          run: |
+            kubectl rollout status deployment/postgres-deployment --timeout=120
+
+        - name: Migrate
+          run: |
+            kubectl delete job migrate --ignore-not-found
+            kubectl apply -f k8s/job/migrate.yaml
+            kubectl wait --for=condition=complete job migrate --timeout=60
